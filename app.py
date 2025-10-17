@@ -23,9 +23,6 @@ def init_db():
         db = get_db()
         cursor = db.cursor()
 
-        cursor.execute("DROP TABLE IF EXISTS products")
-        cursor.execute("DROP TABLE IF EXISTS transactions")
-
         cursor.execute("""
                        CREATE TABLE IF NOT EXISTS products
                        (
@@ -208,7 +205,6 @@ def create_order():
     return render_template('create_order.html')
 
 
-# --- READ Sales Report Operation ---
 @app.route('/sales_report')
 def sales_report():
     db = get_db()
@@ -222,7 +218,14 @@ def sales_report():
     return render_template('sales_report.html', transactions=transactions, grand_total=grand_total)
 
 
-# ------------------------------------
+@app.route('/delete_transaction/<int:transaction_id>', methods=['POST'])
+def delete_transaction(transaction_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM transactions WHERE id = ?", (transaction_id,))
+    db.commit()
+    return redirect(url_for('dashboard'))
+
 
 @app.route('/dashboard')
 def dashboard():
@@ -241,10 +244,12 @@ def dashboard():
     total_categories = cursor.fetchone()[0]
 
     cursor.execute(
-        "SELECT id, customer_name, order_date, total, payment_method FROM transactions ORDER BY id DESC LIMIT 10")
+        "SELECT id, customer_name, order_date, total, payment_method FROM transactions ORDER BY id DESC LIMIT 5")
     recent_orders = [dict(row) for row in cursor.fetchall()]
 
     best_selling_products = []
+
+    earnings_by_date = []
 
     context = {
         'total_orders': total_orders,
@@ -253,6 +258,8 @@ def dashboard():
         'total_categories': total_categories,
         'recent_orders': recent_orders,
         'best_selling_products': best_selling_products,
+        'earnings_by_date': earnings_by_date,
+        'currency': 'PHP'
     }
     return render_template('dashboard.html', **context)
 

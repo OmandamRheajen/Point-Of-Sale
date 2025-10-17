@@ -12,7 +12,7 @@
     </div>
     <div class="bg-green-100 p-4 rounded-xl shadow-md col-span-2">
         <p class="text-sm font-medium text-green-800">Grand Total Revenue</p>
-        <p class="text-3xl font-bold text-green-900">RM {{ "%.2f"|format(grand_total) }}</p>
+        <p class="text-3xl font-bold text-green-900">PHP {{ "%.2f"|format(grand_total) }}</p>
     </div>
 </div>
 
@@ -29,7 +29,7 @@
                     <th class="p-4 text-left font-medium text-gray-500">Invoice ID</th>
                     <th class="p-4 text-left font-medium text-gray-500">Customer Name</th>
                     <th class="p-4 text-left font-medium text-gray-500">Date & Time</th>
-                    <th class="p-4 text-right font-medium text-gray-500">Total (RM)</th>
+                    <th class="p-4 text-right font-medium text-gray-500">Total (PHP)</th>
                     <th class="p-4 text-center font-medium text-gray-500">Method</th>
                 </tr>
             </thead>
@@ -41,7 +41,7 @@
                         <td class="p-4 text-gray-800 font-semibold">{{ transaction.customer_name }}</td>
                         <td class="p-4 text-gray-600">{{ transaction.order_date }}</td>
                         <td class="p-4 text-right font-bold text-green-600">
-                            RM {{ "%.2f"|format(transaction.total) }}
+                            PHP {{ "%.2f"|format(transaction.total) }}
                         </td>
                         <td class="p-4 text-center">
                             <span class="text-xs font-semibold px-2 py-1 rounded {{ 'bg-red-200 text-red-800' if transaction.payment_method == 'Card' else 'bg-green-200 text-green-800' }}">
