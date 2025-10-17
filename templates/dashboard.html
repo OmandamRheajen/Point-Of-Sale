@@ -1,0 +1,122 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+    <div class="p-4 rounded-lg shadow-md data-tile-orders">
+        <p class="text-4xl font-extrabold text-blue-800">{{ total_orders }}</p>
+        <p class="text-sm text-gray-700 mb-2">Total Orders</p>
+        <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">View order <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i></a>
+    </div>
+
+    <div class="p-4 rounded-lg shadow-md data-tile-revenue">
+        <p class="text-4xl font-extrabold text-green-800">RM {{ "%.2f"|format(total_revenue) }}</p>
+        <p class="text-sm text-gray-700 mb-2">Total Revenue</p>
+        <a href="#" class="text-green-600 hover:text-green-800 text-sm font-medium flex items-center">View details <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i></a>
+    </div>
+
+    <div class="p-4 rounded-lg shadow-md data-tile-products">
+        <p class="text-4xl font-extrabold text-orange-800">{{ total_products }}</p>
+        <p class="text-sm text-gray-700 mb-2">Total Product</p>
+        <a href="#" class="text-orange-600 hover:text-orange-800 text-sm font-medium flex items-center">View products <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i></a>
+    </div>
+
+    <div class="p-4 rounded-lg shadow-md data-tile-categories">
+        <p class="text-4xl font-extrabold text-red-800">{{ total_categories }}</p>
+        <p class="text-sm text-gray-700 mb-2">Total Category</p>
+        <a href="#" class="text-red-600 hover:text-red-800 text-sm font-medium flex items-center">View category <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i></a>
+    </div>
+</div>
+
+<div class="grid lg:grid-cols-2 gap-6">
+
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Best Selling Products</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="p-3 text-left font-medium text-gray-500">Product ID</th>
+                        <th class="p-3 text-left font-medium text-gray-500">Product Name</th>
+                        <th class="p-3 text-center font-medium text-gray-500">Quantity</th>
+                        <th class="p-3 text-right font-medium text-gray-500">Price</th>
+                        <th class="p-3 text-right font-medium text-gray-500">Sales Total</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% if best_selling_products %}
+                        {% for product in best_selling_products %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 text-blue-600 font-medium">{{ product.id }}</td>
+                            <td class="p-3 text-gray-800">{{ product.name }}</td>
+                            <td class="p-3 text-center">
+                                 <span class="font-bold text-white bg-blue-500 px-2 py-0.5 rounded-full text-xs">
+                                    {{ product.quantity }}
+                                </span>
+                            </td>
+                            <td class="p-3 text-right font-medium text-green-600">RM {{ "%.2f"|format(product.price) }}</td>
+                            <td class="p-3 text-right font-bold text-orange-600">RM {{ "%.2f"|format(product.sales_total) }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="p-6 text-center text-gray-500">No best-selling product data available.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-lg">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Recent Orders</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="p-3 text-left font-medium text-gray-500">Invoice ID</th>
+                        <th class="p-3 text-left font-medium text-gray-500">Customer Name</th>
+                        <th class="p-3 text-left font-medium text-gray-500">Order Date</th>
+                        <th class="p-3 text-right font-medium text-gray-500">Total</th>
+                        <th class="p-3 text-center font-medium text-gray-500">Payment Method</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% if recent_orders %}
+                        {% for order in recent_orders %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-3 text-blue-600 font-medium">{{ order.id }}</td>
+                            <td class="p-3 text-gray-800">{{ order.customer_name }}</td>
+                            <td class="p-3 text-gray-600">{{ order.order_date }}</td>
+                            <td class="p-3 text-right font-bold text-blue-600">RM {{ "%.2f"|format(order.total) }}</td>
+                            <td class="p-3 text-center">
+                                <span class="text-xs font-semibold px-2 py-1 rounded {{ 'bg-red-200 text-red-800 table-row-card' if order.payment_method == 'Card' else 'bg-green-200 text-green-800 table-row-cash' }}">
+                                    {{ order.payment_method }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="p-6 text-center text-gray-500">No recent transactions found.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow-lg mt-6">
+     <h3 class="text-lg font-semibold text-gray-700 mb-4">Earning by Date</h3>
+     <div class="h-48 flex items-center justify-center bg-gray-50 rounded">
+        <i data-lucide="area-chart" class="w-10 h-10 text-gray-400"></i>
+        <p class="text-gray-500 ml-3">Total Earning chart placeholder</p>
+     </div>
+</div>
+
+{% endblock %}
