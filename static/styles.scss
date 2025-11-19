@@ -1,0 +1,21 @@
+$sidebar-dark: #2d3748;
+$primary-color: #3b82f6;
+
+body {
+    background-color: #f4f7f9;
+    color: #2d3748;
+}
+
+.sidebar {
+    background-color: $sidebar-dark;
+    color: white;
+}
+
+.sidebar-nav-link {
+    color: #cbd5e0;
+}
+
+.sidebar-nav-link:hover, .sidebar-nav-link.active {
+    background-color: #4a5568;
+    color: white;
+}
