@@ -1,57 +1,204 @@
 {% extends "layout.html" %}
 
-{% block title %}Create New Order{% endblock %}
+{% block title %}Create Order{% endblock %}
 
 {% block content %}
-<h2 class="text-2xl font-bold text-gray-800 mb-6">Create New Order (Manual Sale)</h2>
-
-<div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-xl">
-
-    {% if error %}
-    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-        <p class="font-bold">Error</p>
-        <p>{{ error }}</p>
+<div class="flex h-[calc(100vh-100px)] gap-6">
+    <div class="w-2/3 bg-white rounded-xl shadow-lg flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+            <h2 class="text-lg font-bold text-gray-700 flex items-center">
+                <i data-lucide="package" class="w-5 h-5 mr-2"></i> Product Catalog
+            </h2>
+            <div class="relative w-64">
+                <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-gray-400"></i>
+                <input type="text" id="product-search" placeholder="Search..." class="w-full pl-9 p-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+        </div>
+        <div id="product-grid" class="p-4 grid grid-cols-3 lg:grid-cols-4 gap-4 overflow-y-auto custom-scroll flex-grow bg-gray-100"></div>
     </div>
-    {% endif %}
 
-    {% if request.method == 'POST' and not error %}
-    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
-        <p class="font-bold">Success</p>
-        <p>Order recorded successfully! Redirecting to Dashboard...</p>
+    <div class="w-1/3 bg-white rounded-xl shadow-lg flex flex-col overflow-hidden border border-gray-200">
+        <div class="p-4 border-b border-gray-200 bg-gray-50">
+            <h2 class="text-lg font-bold text-gray-700">Current Order</h2>
+        </div>
+        <div class="p-3">
+            <input type="text" id="customer-name" placeholder="Customer Name" class="w-full border border-gray-300 p-2 rounded focus:outline-none focus:border-blue-500">
+        </div>
+        <div id="cart-items" class="flex-grow overflow-y-auto p-2 space-y-2 bg-white"></div>
+
+        <div class="p-5 bg-gray-50 border-t space-y-2">
+            <div class="flex justify-between text-sm text-gray-600"><span>Subtotal</span><span id="subtotal-display">0.00</span></div>
+            <div class="flex justify-between text-sm text-gray-600"><span>Tax (12%)</span><span id="tax-display">0.00</span></div>
+            <div class="flex justify-between text-xl font-bold text-blue-600 pt-2 border-t"><span>Total</span><span id="total-display">0.00</span></div>
+            <button id="btn-checkout" onclick="openCheckoutModal()" disabled class="w-full mt-4 bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition shadow">Checkout</button>
+        </div>
     </div>
-    {% endif %}
-
-    <form method="POST" action="{{ url_for('create_order') }}" class="space-y-6">
-
-        <div class="border-b pb-4">
-            <label for="total" class="block text-xl font-bold text-gray-800 mb-2">Order Total (PHP)</label>
-            <input type="number" id="total" name="total" step="0.01" required
-                   class="w-full p-4 text-3xl font-extrabold text-blue-700 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100"
-                   placeholder="0.00">
-        </div>
-
-        <div>
-            <label for="payment_method" class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
-            <select id="payment_method" name="payment_method" required
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">-- Select Payment Method --</option>
-                <option value="Cash">Cash</option>
-                <option value="Card">Card</option>
-            </select>
-        </div>
-
-        <div>
-            <label for="customer_name" class="block text-sm font-medium text-gray-700 mb-1">Customer Name (Optional)</label>
-            <input type="text" id="customer_name" name="customer_name"
-                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   placeholder="Leave blank for Walk-in Customer">
-        </div>
-
-        <button type="submit"
-                class="w-full bg-green-600 text-white font-bold py-3 rounded-lg shadow-md hover:bg-green-700 transition flex items-center justify-center">
-            <i data-lucide="printer" class="w-5 h-5 mr-2"></i> Record Order & Print Receipt
-        </button>
-
-    </form>
 </div>
+
+<div id="checkout-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm">
+    <div class="bg-white rounded-xl w-full max-w-md overflow-hidden shadow-2xl transform transition-all scale-100">
+        <div class="bg-blue-600 p-4 text-white flex justify-between items-center">
+            <h3 class="text-lg font-bold">Complete Payment</h3>
+            <button onclick="closeCheckoutModal()" class="hover:bg-blue-700 p-1 rounded"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="p-6 space-y-5">
+            <div class="text-center">
+                <p class="text-gray-500 text-sm">Total Amount Due</p>
+                <div class="text-3xl font-extrabold text-gray-800" id="modal-total">0.00</div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold mb-2 text-gray-700">Payment Method</label>
+                <div class="flex gap-4">
+                    <button onclick="selectMethod('Cash')" id="btn-cash" class="flex-1 border-2 p-3 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition flex flex-col items-center"><i data-lucide="banknote" class="w-6 h-6 mb-1 text-green-600"></i>Cash</button>
+                    <button onclick="selectMethod('Card')" id="btn-card" class="flex-1 border-2 p-3 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition flex flex-col items-center"><i data-lucide="credit-card" class="w-6 h-6 mb-1 text-blue-600"></i>Card</button>
+                </div>
+            </div>
+
+            <div id="cash-section" class="hidden">
+                <label class="text-sm font-bold text-gray-700">Amount Tendered</label>
+                <input type="number" id="cash-tendered" class="w-full border p-2 rounded font-bold text-lg focus:ring-2 focus:ring-green-500 focus:outline-none mt-1">
+                <div class="mt-3 bg-green-50 p-2 rounded border border-green-200 flex justify-between">
+                    <span class="text-green-800 font-semibold">Change:</span>
+                    <span id="cash-change" class="font-bold text-green-700">0.00</span>
+                </div>
+            </div>
+
+            <div id="card-section" class="hidden space-y-3">
+                <input type="text" id="card-number" placeholder="Card Number" class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex gap-3">
+                    <input type="text" id="card-expiry" placeholder="MM/YY" class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="password" id="card-cvv" placeholder="CVV" class="w-full border p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+
+            <button id="btn-confirm-pay" onclick="processPayment()" disabled class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow">Confirm Payment</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let products = [], cart = [], cartTotal = 0, method = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/products').then(r => r.json()).then(d => { products = d.products; renderProducts(products); });
+        document.getElementById('product-search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            renderProducts(products.filter(p => p.name.toLowerCase().includes(term)));
+        });
+        document.getElementById('cash-tendered').addEventListener('input', calcChange);
+        lucide.createIcons();
+    });
+
+    function renderProducts(list) {
+        const grid = document.getElementById('product-grid');
+        grid.innerHTML = list.map(p => `
+            <div onclick='addToCart(${JSON.stringify(p)})' class="bg-white p-3 rounded-lg shadow cursor-pointer border hover:border-blue-500 hover:shadow-md transition flex flex-col justify-between h-28">
+                <div>
+                    <h3 class="font-bold text-gray-800 line-clamp-1">${p.name}</h3>
+                    <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full text-gray-500">${p.category || 'General'}</span>
+                </div>
+                <div class="text-blue-600 font-bold mt-2">PHP ${p.price.toFixed(2)}</div>
+            </div>
+        `).join('');
+    }
+
+    function addToCart(p) {
+        const exist = cart.find(i => i.id === p.id);
+        exist ? exist.qty++ : cart.push({...p, qty: 1});
+        renderCart();
+    }
+
+    function renderCart() {
+        let sub = 0;
+        document.getElementById('cart-items').innerHTML = cart.map((item, i) => {
+            sub += item.price * item.qty;
+            return `<div class="flex justify-between items-center p-2 bg-gray-50 border rounded mb-2">
+                <div class="flex-grow">
+                    <div class="font-bold text-sm text-gray-800">${item.name}</div>
+                    <div class="text-xs text-gray-500">PHP ${item.price}</div>
+                </div>
+                <div class="flex items-center">
+                    <span class="font-mono font-bold mx-2">x${item.qty}</span>
+                    <button onclick="cart.splice(${i},1);renderCart()" class="text-red-500 hover:bg-red-100 p-1 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            </div>`;
+        }).join('');
+
+        const tax = sub * 0.12;
+        cartTotal = sub + tax;
+        document.getElementById('subtotal-display').innerText = sub.toFixed(2);
+        document.getElementById('tax-display').innerText = tax.toFixed(2);
+        document.getElementById('total-display').innerText = cartTotal.toFixed(2);
+        document.getElementById('modal-total').innerText = cartTotal.toFixed(2);
+        document.getElementById('btn-checkout').disabled = cart.length === 0;
+        lucide.createIcons();
+    }
+
+    function openCheckoutModal() {
+        document.getElementById('checkout-modal').classList.remove('hidden');
+        document.getElementById('checkout-modal').classList.add('flex');
+        selectMethod(null);
+    }
+    function closeCheckoutModal() {
+        document.getElementById('checkout-modal').classList.add('hidden');
+        document.getElementById('checkout-modal').classList.remove('flex');
+    }
+
+    function selectMethod(m) {
+        method = m;
+        const btnCash = document.getElementById('btn-cash');
+        const btnCard = document.getElementById('btn-card');
+        btnCash.classList.remove('border-blue-500', 'bg-blue-50');
+        btnCard.classList.remove('border-blue-500', 'bg-blue-50');
+        document.getElementById('cash-section').classList.add('hidden');
+        document.getElementById('card-section').classList.add('hidden');
+        document.getElementById('btn-confirm-pay').disabled = true;
+
+        if (m === 'Cash') {
+            btnCash.classList.add('border-blue-500', 'bg-blue-50');
+            document.getElementById('cash-section').classList.remove('hidden');
+        } else if (m === 'Card') {
+            btnCard.classList.add('border-blue-500', 'bg-blue-50');
+            document.getElementById('card-section').classList.remove('hidden');
+            document.getElementById('btn-confirm-pay').disabled = false;
+        }
+    }
+
+    function calcChange() {
+        if (method !== 'Cash') return;
+        const pay = parseFloat(document.getElementById('cash-tendered').value) || 0;
+        document.getElementById('cash-change').innerText = (pay - cartTotal).toFixed(2);
+        document.getElementById('btn-confirm-pay').disabled = pay < cartTotal;
+    }
+
+    function processPayment() {
+        const btn = document.getElementById('btn-confirm-pay');
+        btn.innerText = 'Processing...';
+
+        const payload = {
+            customer_name: document.getElementById('customer-name').value,
+            total: cartTotal,
+            payment_method: method,
+            cart: cart,
+            card_number: document.getElementById('card-number').value,
+            card_expiry: document.getElementById('card-expiry').value,
+            card_cvv: document.getElementById('card-cvv').value
+        };
+
+        fetch('/create_order', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        }).then(r => r.json()).then(d => {
+            if(d.success) {
+                alert('Billing Successful!');
+                location.reload();
+            } else {
+                alert('Error: ' + d.message);
+                btn.innerText = 'Confirm Payment';
+            }
+        });
+    }
+</script>
 {% endblock %}

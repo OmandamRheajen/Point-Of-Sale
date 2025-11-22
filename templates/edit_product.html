@@ -1,70 +1,45 @@
 {% extends "layout.html" %}
 
-{% block title %}Edit Product: {{ product.name }}{% endblock %}
+{% block title %}Edit Product{% endblock %}
 
 {% block content %}
-<h2 class="text-2xl font-bold text-gray-800 mb-6">Edit Product: {{ product.name }}</h2>
-
-<div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-xl">
+<div class="max-w-lg mx-auto bg-white p-8 rounded-xl shadow-lg mt-10">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+        <i data-lucide="square-pen" class="w-6 h-6 mr-2 text-blue-600"></i> Edit Product
+    </h2>
 
     {% if error %}
-    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
-        <p class="font-bold">Error</p>
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
         <p>{{ error }}</p>
     </div>
     {% endif %}
 
-    {% if request.method == 'POST' and not error %}
-    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
-        <p class="font-bold">Success</p>
-        <p>Product updated successfully!</p>
-    </div>
-    {% endif %}
-
-    <form method="POST" action="{{ url_for('edit_product', product_id=product.id) }}" class="space-y-6">
-
-        <div class="text-sm font-medium text-gray-500">
-            Product ID: <span class="font-bold text-gray-700">{{ product.id }}</span>
+    <form method="POST" action="{{ url_for('edit_product', product_id=product.id) }}" class="space-y-5">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+            <input type="text" name="name" value="{{ product.name }}" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
         </div>
 
         <div>
-            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-            <input type="text" id="name" name="name" required
-                   value="{{ product.name }}"
-                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   placeholder="e.g., Iced Latte">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Price (PHP)</label>
+            <input type="number" name="price" value="{{ product.price }}" step="0.01" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
         </div>
 
         <div>
-            <label for="price" class="block text-sm font-medium text-gray-700 mb-1">Price (PHP)</label>
-            <input type="number" id="price" name="price" step="0.01" required
-                   value="{{ '%.2f'|format(product.price) }}"
-                   class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                   placeholder="e.g., 12.90">
-        </div>
-
-        <div>
-            <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select id="category" name="category"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="" {% if product.category is none or product.category == '' %}selected{% endif %}> (Optional) Select Category </option>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <select name="category" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                 <option value="Food" {% if product.category == 'Food' %}selected{% endif %}>Food</option>
                 <option value="Beverages" {% if product.category == 'Beverages' %}selected{% endif %}>Beverages</option>
-                <option value="Electronics" {% if product.category == 'Electronics' %}selected{% endif %}>Electronics</option>
-                <option value="Apparel" {% if product.category == 'Apparel' %}selected{% endif %}>Apparel</option>
+                <option value="Snacks" {% if product.category == 'Snacks' %}selected{% endif %}>Snacks</option>
+                <option value="Dessert" {% if product.category == 'Dessert' %}selected{% endif %}>Dessert</option>
                 <option value="Other" {% if product.category == 'Other' %}selected{% endif %}>Other</option>
             </select>
         </div>
 
-        <button type="submit"
-                class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-md hover:bg-blue-700 transition flex items-center justify-center">
-            <i data-lucide="save" class="w-5 h-5 mr-2"></i> Update Product
-        </button>
-
-        <a href="{{ url_for('product_list') }}"
-           class="w-full text-center text-gray-600 font-semibold py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition block">
-            Cancel
-        </a>
+        <div class="pt-4 flex gap-4">
+            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow">Update Product</button>
+            <a href="{{ url_for('product_list') }}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg text-center transition">Cancel</a>
+        </div>
     </form>
 </div>
 {% endblock %}

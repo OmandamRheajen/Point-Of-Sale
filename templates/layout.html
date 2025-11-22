@@ -4,79 +4,72 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Point Of Sale{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="{{ url_for('static', filename='js/tailwindcss.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/lucide.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        .dashboard-layout {
-            display: grid;
-            grid-template-columns: 240px 1fr;
-            min-height: calc(100vh - 64px);
+        .dashboard-layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 64px); }
+        @media (max-width: 1024px) { .dashboard-layout { grid-template-columns: 1fr; } .sidebar { display: none; } }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #cbd5e1;
+            transition: all 0.2s;
+            border-radius: 0.5rem;
+            margin-bottom: 4px;
         }
-        @media (max-width: 1024px) {
-            .dashboard-layout { grid-template-columns: 1fr; }
-            .sidebar { display: none; }
+        .nav-link:hover, .nav-link.active {
+            background-color: #475569;
+            color: #ffffff;
+            font-weight: 500;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
-
-    <header class="pos-header text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-10">
+<body class="min-h-screen flex flex-col bg-gray-100">
+    <header class="bg-blue-600 text-white p-4 shadow-lg flex justify-between items-center sticky top-0 z-10">
         <div class="flex items-center space-x-4">
-            <i data-lucide="menu" class="w-6 h-6 lg:hidden"></i>
-            <h1 class="text-xl font-bold">Point Of Sale</h1>
+            <i data-lucide="menu" class="w-6 h-6 lg:hidden cursor-pointer"></i>
+            <h1 class="text-xl font-bold tracking-wide">Point Of Sale</h1>
         </div>
         <div class="flex items-center space-x-3">
-            <span class="text-sm">{{ session.username if session.username else 'Guest' }}</span>
+            <span class="text-sm font-medium">{{ session.username }}</span>
             <i data-lucide="user-circle" class="w-8 h-8"></i>
         </div>
     </header>
 
     <div class="dashboard-layout flex-grow">
-
-        <aside class="sidebar h-full hidden lg:block p-3">
-            <div class="px-3 mb-6">
-                <p class="text-sm text-gray-300 font-semibold flex items-center pt-2">
-                    <span class="w-2 h-2 bg-green-400 rounded-full mr-2"></span> {{ session.username if session.username else 'Guest' }} - Online
+        <aside class="sidebar bg-gray-800 h-full hidden lg:block p-4 shadow-inner">
+            <div class="mb-8 px-2">
+                <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">Status</p>
+                <p class="text-sm text-green-400 font-semibold flex items-center">
+                    <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span> Online
                 </p>
             </div>
-
-            <div class="px-3 mb-6">
-                <input type="text" placeholder="Search..." class="w-full p-2 rounded bg-gray-600 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500">
-            </div>
-
-            <nav class="space-y-1">
-                <a href="{{ url_for('dashboard') }}" class="sidebar-nav-link {% if request.path == url_for('dashboard') %}active{% endif %}">
+            <nav>
+                <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.path == url_for('dashboard') %}active{% endif %}">
                     <i data-lucide="layout-dashboard" class="w-5 h-5 mr-3"></i> Dashboard
                 </a>
-                <a href="{{ url_for('index') }}" class="sidebar-nav-link {% if request.path == url_for('index') %}active{% endif %}">
-                    <i data-lucide="scan-line" class="w-5 h-5 mr-3"></i> Register
+                <a href="{{ url_for('create_order') }}" class="nav-link {% if request.path == url_for('create_order') %}active{% endif %}">
+                    <i data-lucide="shopping-cart" class="w-5 h-5 mr-3"></i> Create Order
                 </a>
-                <a href="{{ url_for('add_product') }}" class="sidebar-nav-link {% if request.path == url_for('add_product') %}active{% endif %}">
-                    <i data-lucide="package-plus" class="w-5 h-5 mr-3"></i> Add Product
-                </a>
-                <a href="{{ url_for('product_list') }}" class="sidebar-nav-link {% if request.path == url_for('product_list') %}active{% endif %}">
+                <a href="{{ url_for('product_list') }}" class="nav-link {% if request.path == url_for('product_list') %}active{% endif %}">
                     <i data-lucide="list-ordered" class="w-5 h-5 mr-3"></i> Product List
                 </a>
-                <a href="{{ url_for('create_order') }}" class="sidebar-nav-link {% if request.path == url_for('create_order') %}active{% endif %}">
-                    <i data-lucide="printer" class="w-5 h-5 mr-3"></i> Create Order
-                </a>
-                <a href="{{ url_for('sales_report') }}" class="sidebar-nav-link {% if request.path == url_for('sales_report') %}active{% endif %}">
+                <a href="{{ url_for('sales_report') }}" class="nav-link {% if request.path == url_for('sales_report') %}active{% endif %}">
                     <i data-lucide="file-text" class="w-5 h-5 mr-3"></i> Sales Report
                 </a>
-                <a href="{{ url_for('logout') }}" class="sidebar-nav-link pt-6">
+                <div class="border-t border-gray-700 my-4"></div>
+                <a href="{{ url_for('logout') }}" class="nav-link hover:text-red-400">
                     <i data-lucide="log-out" class="w-5 h-5 mr-3"></i> Sign Out
                 </a>
             </nav>
         </aside>
 
-        <main class="flex-grow p-6">
+        <main class="flex-grow p-6 overflow-y-auto">
             {% block content %}{% endblock %}
         </main>
     </div>
-
-    <script>
-        lucide.createIcons();
-    </script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
